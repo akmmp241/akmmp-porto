@@ -1,0 +1,30 @@
+{
+	"name": "AkmalMP — Portfolio",
+	"short_name": "AkmalMP",
+	"description": "Akmal Muhammad Pridianto — Software Engineer. Backend systems, infrastructure, and software craft.",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"orientation": "portrait",
+	"background_color": "#282c33",
+	"theme_color": "#282c33",
+	"icons": [
+		{
+			"src": "/favicon.ico",
+			"sizes": "48x48",
+			"type": "image/x-icon"
+		},
+		{
+			"src": "/akm-2.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/akm-2.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
+}
