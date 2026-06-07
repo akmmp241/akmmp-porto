@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: akmmp-web:latest
+    image: akmalmp241/akmmp-porto:latest
     container_name: akmmp-web
     restart: unless-stopped
     init: true
@@ -11,9 +11,9 @@ services:
       - '127.0.0.1:3000:3000'
     env_file:
       - .env.production
-    environment:
-      NODE_ENV: production
-      PORT: 3000
+    # environment:
+    #   NODE_ENV: production
+    #   PORT: 3000
     networks:
       - shared
     healthcheck:
