@@ -3,19 +3,18 @@ import { loadProjects, loadExperiences, loadSkillGroups } from '$lib/server/cont
 import { getGitHubStats } from '$lib/server/github';
 
 export const load: PageServerLoad = async () => {
-	const [projects, experiences, skillGroups, github] = await Promise.all([
+	const [projects, experiences, skillGroups] = await Promise.all([
 		loadProjects(),
 		loadExperiences(),
-		loadSkillGroups(),
-		getGitHubStats().catch((err) => {
-			console.warn('[home] GitHub stats failed:', err);
-			return null;
-		})
+		loadSkillGroups()
 	]);
 	return {
 		projects: projects.filter((p) => p.featured),
 		experiences,
 		skillGroups,
-		github
+		github: getGitHubStats().catch((err) => {
+			console.warn('[home] GitHub stats failed:', err);
+			return null;
+		})
 	};
 };

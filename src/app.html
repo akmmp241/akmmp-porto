@@ -28,10 +28,137 @@
 					if (theme === 'dark') document.documentElement.classList.add('dark');
 				} catch (e) {}
 			})();
+			// Splash: decide before paint whether to show. Hide page behind it via html class.
+			(function () {
+				try {
+					if (window.location.pathname.startsWith('/admin')) return;
+					if (sessionStorage.getItem('splash-seen')) return;
+					document.documentElement.classList.add('splash-active');
+				} catch (e) {}
+			})();
 		</script>
+		<style>
+			html.splash-active { overflow: hidden; }
+			html.splash-active body > div:not(#splash-screen) { visibility: hidden; }
+			#splash-screen {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: #282c33;
+				background-image: repeating-linear-gradient(
+					-45deg,
+					rgba(255, 255, 255, 0.015) 0px,
+					rgba(255, 255, 255, 0.015) 1px,
+					transparent 1px,
+					transparent 12px
+				);
+				transition: opacity 600ms cubic-bezier(0.4, 0, 0.2, 1);
+				font-family: 'Fira Code', ui-monospace, monospace;
+			}
+			html:not(.splash-active) #splash-screen { display: none; }
+			#splash-screen.splash-exit { opacity: 0; pointer-events: none; }
+			#splash-screen .splash-content {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 16px;
+				animation: splash-rise 700ms cubic-bezier(0.33, 1, 0.68, 1) both;
+			}
+			#splash-screen .splash-logo {
+				display: flex;
+				align-items: center;
+				gap: 2px;
+				font-size: 2.5rem;
+				font-weight: 800;
+				letter-spacing: -0.02em;
+				animation: splash-logo-in 800ms cubic-bezier(0.34, 1.56, 0.64, 1) 100ms both;
+			}
+			#splash-screen .logo-bracket {
+				color: rgb(199, 120, 221);
+				opacity: 0.7;
+				font-weight: 400;
+			}
+			#splash-screen .logo-letter {
+				color: #fff;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 2.5rem;
+				height: 2.5rem;
+				border: 2px solid rgb(199, 120, 221);
+				border-radius: 6px;
+				font-size: 1.5rem;
+			}
+			#splash-screen .splash-name {
+				font-size: 0.875rem;
+				font-weight: 600;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				color: rgb(171, 178, 191);
+				margin: 0;
+				animation: splash-fade-in 600ms ease 400ms both;
+			}
+			#splash-screen .splash-bar-track {
+				width: 120px;
+				height: 2px;
+				background: rgba(128, 128, 128, 0.2);
+				border-radius: 999px;
+				overflow: hidden;
+				animation: splash-fade-in 300ms ease 500ms both;
+			}
+			#splash-screen .splash-bar {
+				height: 100%;
+				width: 100%;
+				background: rgb(199, 120, 221);
+				border-radius: 999px;
+				transform-origin: left;
+				animation: splash-fill 1200ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+			}
+			@keyframes splash-rise {
+				from { opacity: 0; transform: translateY(20px); }
+				to   { opacity: 1; transform: translateY(0); }
+			}
+			@keyframes splash-logo-in {
+				from { opacity: 0; transform: scale(0.75); }
+				to   { opacity: 1; transform: scale(1); }
+			}
+			@keyframes splash-fill {
+				from { transform: scaleX(0); }
+				to   { transform: scaleX(1); }
+			}
+			@keyframes splash-fade-in {
+				from { opacity: 0; }
+				to   { opacity: 1; }
+			}
+			@media (prefers-reduced-motion: reduce) {
+				#splash-screen .splash-content,
+				#splash-screen .splash-logo,
+				#splash-screen .splash-bar,
+				#splash-screen .splash-name,
+				#splash-screen .splash-bar-track {
+					animation: none !important;
+				}
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="bg-background text-foreground antialiased">
+		<div id="splash-screen" aria-hidden="true">
+			<div class="splash-content">
+				<div class="splash-logo">
+					<span class="logo-bracket">[</span>
+					<span class="logo-letter">A</span>
+					<span class="logo-bracket">]</span>
+				</div>
+				<p class="splash-name">Akmalmp</p>
+				<div class="splash-bar-track" aria-hidden="true">
+					<div class="splash-bar"></div>
+				</div>
+			</div>
+		</div>
 		<a
 			href="#main-content"
 			class="focus:bg-primary focus:text-background sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded focus:px-4 focus:py-2"

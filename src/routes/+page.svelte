@@ -41,8 +41,10 @@
 <Skills lang={data.lang} skillGroups={data.skillGroups} />
 <Experience experiences={data.experiences} lang={data.lang} />
 <AboutMe />
-{#if data.github}
-	<GithubStats github={data.github} />
-{/if}
+{#await data.github then github}
+	{#if github}
+		<GithubStats {github} />
+	{/if}
+{/await}
 <Contacts />
 
