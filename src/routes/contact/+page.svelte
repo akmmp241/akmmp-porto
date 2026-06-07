@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { contactFormSchema } from '$lib/schemas/engagement';
 	import SectionHeading from '$lib/components/layout/section-heading.svelte';
 	import Contacts from '$lib/components/sections/contacts.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta } from '$lib/seo';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Loader2, Check } from '@lucide/svelte';
 
@@ -32,11 +35,23 @@
 	const charCountColor = $derived(
 		charCount >= 2000 ? 'text-destructive font-semibold' : charCount >= 1800 ? 'text-amber-500 font-semibold' : 'text-muted-foreground'
 	);
+
+	const lang = $derived(page.data.lang);
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang,
+			site: page.data.site,
+			title: `Contact · ${page.data.site.owner}`,
+			description:
+				lang === 'id'
+					? 'Hubungi saya untuk peluang kerja, kolaborasi proyek, atau sekadar menyapa.'
+					: 'Get in touch about work, collaborations, or just to say hello.'
+		})
+	);
 </script>
 
-<svelte:head>
-	<title>Contact · Akmal MP</title>
-</svelte:head>
+<SeoHead {meta} />
 
 <section class="flex flex-col gap-12 px-6 lg:p-0">
 	<SectionHeading>{m.contacts_title()}</SectionHeading>

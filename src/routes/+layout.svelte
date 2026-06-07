@@ -11,18 +11,13 @@
 	let { data, children } = $props();
 
 	const isAdmin = $derived(page.url.pathname.startsWith('/admin'));
-	const site = $derived(data.site);
 </script>
 
 <svelte:head>
-	<title>{site.siteName}</title>
-	<meta name="description" content="Akmal Muhammad Pridianto — Software Engineer" />
-	<meta property="og:type" content="website" />
-	<meta property="og:title" content={site.siteName} />
-	<meta property="og:image" content={site.ogImage} />
-	<meta property="og:url" content={site.baseUrl} />
-	<meta name="twitter:card" content="summary_large_image" />
 	<link rel="alternate" type="application/rss+xml" href="/rss.xml" title="Akmal MP — Blog" />
+	{#if isAdmin}
+		<meta name="robots" content="noindex, nofollow" />
+	{/if}
 </svelte:head>
 
 {#if isAdmin}

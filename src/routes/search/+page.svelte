@@ -71,6 +71,7 @@
 
 <svelte:head>
 	<title>Search · Akmal MP</title>
+	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 
 <section class="flex flex-col gap-12 px-6 lg:p-0">

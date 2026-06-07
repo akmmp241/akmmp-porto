@@ -1,20 +1,36 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
+	import { page } from '$app/state';
 	import SectionHeading from '$lib/components/layout/section-heading.svelte';
 	import ExperienceList from '$lib/components/sections/experience-list.svelte';
 	import InteractiveHoverButton from '$lib/components/fx/interactive-hover-button.svelte';
 	import ShinyButton from '$lib/components/fx/shiny-button.svelte';
 	import Link from '$lib/components/ui/link.svelte';
 	import Reveal from '$lib/components/fx/reveal.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta } from '$lib/seo';
 	import type { LangCode } from '$lib/i18n';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData & { lang: LangCode } } = $props();
+
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang: data.lang,
+			site: page.data.site,
+			title: `About · ${page.data.site.owner}`,
+			description:
+				data.lang === 'id'
+					? `Tentang ${page.data.site.owner} — Software Engineer fokus backend, infrastruktur, dan rekayasa perangkat lunak.`
+					: `About ${page.data.site.owner} — Software Engineer focused on backend systems, infrastructure, and software craft.`,
+			type: 'profile',
+			author: page.data.site.owner
+		})
+	);
 </script>
 
-<svelte:head>
-	<title>About · Akmal MP</title>
-</svelte:head>
+<SeoHead {meta} />
 
 <section class="flex flex-col gap-12 px-6 lg:p-0">
 	<SectionHeading>{m.about_title()}</SectionHeading>

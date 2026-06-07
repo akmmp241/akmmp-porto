@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { Clock, Tag, ArrowLeft } from '@lucide/svelte';
+	import { page } from '$app/state';
 	import { localizeHref } from '$lib/paraglide/runtime.js';
 	import SectionHeading from '$lib/components/layout/section-heading.svelte';
 	import Reveal from '$lib/components/fx/reveal.svelte';
 	import TiltCard from '$lib/components/fx/tilt-card.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta } from '$lib/seo';
 	import { tr, type LangCode } from '$lib/i18n';
 	import { cn } from '$lib/utils/cn';
 	import type { PageData } from './$types';
@@ -18,11 +21,22 @@
 			year: 'numeric'
 		});
 	}
+
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang: data.lang,
+			site: page.data.site,
+			title: `#${data.tag.name} · Blog · ${page.data.site.owner}`,
+			description:
+				data.lang === 'id'
+					? `Posting blog dengan tag #${data.tag.name}.`
+					: `Blog posts tagged #${data.tag.name}.`
+		})
+	);
 </script>
 
-<svelte:head>
-	<title>#{data.tag.name} · Blog · Akmal MP</title>
-</svelte:head>
+<SeoHead {meta} />
 
 <section class="flex flex-col gap-12 px-6 lg:p-0">
 	<a

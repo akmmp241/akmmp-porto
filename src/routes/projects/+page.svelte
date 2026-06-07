@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
+	import { page } from '$app/state';
 	import SectionHeading from '$lib/components/layout/section-heading.svelte';
 	import ProjectCard from '$lib/components/sections/project-card.svelte';
 	import Reveal from '$lib/components/fx/reveal.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta } from '$lib/seo';
 	import { cn } from '$lib/utils/cn';
 	import type { LangCode } from '$lib/i18n';
 	import type { PageData } from './$types';
@@ -22,11 +25,22 @@
 		if (!selected) return data.projects;
 		return data.projects.filter((p) => p.techstack.includes(selected!));
 	});
+
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang: data.lang,
+			site: page.data.site,
+			title: `Projects · ${page.data.site.owner}`,
+			description:
+				data.lang === 'id'
+					? 'Pilihan proyek backend, sistem terdistribusi, dan tooling yang saya bangun.'
+					: 'A selection of backend systems, distributed services, and tooling I have built.'
+		})
+	);
 </script>
 
-<svelte:head>
-	<title>Projects · Akmal MP</title>
-</svelte:head>
+<SeoHead {meta} />
 
 <section class="flex flex-col gap-12 px-6 lg:p-0">
 	<SectionHeading>{m.projects_title()}</SectionHeading>

@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { Clock, Tag } from '@lucide/svelte';
+	import { page } from '$app/state';
 	import { localizeHref } from '$lib/paraglide/runtime.js';
 	import SectionHeading from '$lib/components/layout/section-heading.svelte';
 	import Reveal from '$lib/components/fx/reveal.svelte';
 	import TiltCard from '$lib/components/fx/tilt-card.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta } from '$lib/seo';
 	import { tr, type LangCode } from '$lib/i18n';
 	import { cn } from '$lib/utils/cn';
 	import type { PageData } from './$types';
@@ -18,13 +21,22 @@
 			year: 'numeric'
 		});
 	}
+
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang: data.lang,
+			site: page.data.site,
+			title: `Blog · ${page.data.site.owner}`,
+			description:
+				data.lang === 'id'
+					? 'Catatan tentang backend, infrastruktur, dan rekayasa perangkat lunak.'
+					: 'Notes on backend systems, infrastructure, and software craft.'
+		})
+	);
 </script>
 
-<svelte:head>
-	<title>Blog · Akmal MP</title>
-	<meta name="description" content="Notes on backend systems, infrastructure, and software craft." />
-	<link rel="alternate" type="application/rss+xml" href="/rss.xml" title="Akmal MP — Blog" />
-</svelte:head>
+<SeoHead {meta} />
 
 <section class="flex flex-col gap-12 px-6 lg:p-0">
 	<SectionHeading>blog</SectionHeading>

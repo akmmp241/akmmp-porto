@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types';
-import { loadSite } from '$lib/server/content';
+import { loadSite, loadAbout } from '$lib/server/content';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-	const site = await loadSite();
-	return { lang: locals.lang ?? 'en', site };
+	const [site, about] = await Promise.all([loadSite(), loadAbout()]);
+	return { lang: locals.lang ?? 'en', site, about };
 };

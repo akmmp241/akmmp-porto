@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ArrowLeft, ExternalLink, Globe } from '@lucide/svelte';
+	import { page } from '$app/state';
 	import Github from '$lib/components/ui/icons/github.svelte';
 	import { localizeHref } from '$lib/paraglide/runtime.js';
 	import { tr, type LangCode } from '$lib/i18n';
@@ -8,6 +9,8 @@
 	import Toc from '$lib/components/fx/toc.svelte';
 	import ProseEnhancer from '$lib/components/fx/prose-enhancer.svelte';
 	import ProjectCard from '$lib/components/sections/project-card.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta, creativeWorkJsonLd, breadcrumbJsonLd, absoluteUrl } from '$lib/seo';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData & { lang: LangCode } } = $props();
@@ -15,18 +18,42 @@
 	let proseEl: HTMLElement | undefined = $state();
 
 	const description = $derived(tr(data.project.description, data.lang));
+
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang: data.lang,
+			site: page.data.site,
+			title: `${data.project.title} · Projects · ${page.data.site.owner}`,
+			description,
+			image:
+				data.project.image ??
+				`/og?title=${encodeURIComponent(data.project.title)}&subtitle=${encodeURIComponent(description.slice(0, 80))}&kind=project`,
+			type: 'article',
+			tags: data.project.techstack,
+			author: page.data.site.owner
+		})
+	);
+
+	const baseUrl = $derived(page.data.site.baseUrl.replace(/\/$/, ''));
+	const ld = $derived([
+		creativeWorkJsonLd({
+			site: page.data.site,
+			name: data.project.title,
+			description,
+			url: meta.canonical,
+			image: data.project.image,
+			keywords: data.project.techstack
+		}),
+		breadcrumbJsonLd([
+			{ name: 'Home', url: absoluteUrl('/', baseUrl) },
+			{ name: 'Projects', url: absoluteUrl('/projects', baseUrl) },
+			{ name: data.project.title, url: meta.canonical }
+		])
+	]);
 </script>
 
-<svelte:head>
-	<title>{data.project.title} · Projects · Akmal MP</title>
-	<meta name="description" content={description} />
-	<meta property="og:type" content="article" />
-	<meta property="og:title" content={data.project.title} />
-	<meta property="og:description" content={description} />
-	{#if data.project.image}
-		<meta property="og:image" content={data.project.image} />
-	{/if}
-</svelte:head>
+<SeoHead {meta} jsonLd={ld} />
 
 {#if data.html}
 	<ReadingProgress />

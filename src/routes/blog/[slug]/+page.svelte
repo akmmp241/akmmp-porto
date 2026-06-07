@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { Clock, Calendar, ArrowLeft, Tag } from '@lucide/svelte';
+	import { page } from '$app/state';
 	import { localizeHref } from '$lib/paraglide/runtime.js';
 	import { tr, type LangCode } from '$lib/i18n';
 	import Reveal from '$lib/components/fx/reveal.svelte';
 	import ReadingProgress from '$lib/components/fx/reading-progress.svelte';
 	import Toc from '$lib/components/fx/toc.svelte';
 	import ProseEnhancer from '$lib/components/fx/prose-enhancer.svelte';
+	import SeoHead from '$lib/components/seo/seo-head.svelte';
+	import { buildMeta, articleJsonLd, breadcrumbJsonLd, absoluteUrl } from '$lib/seo';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData & { lang: LangCode } } = $props();
@@ -23,20 +26,57 @@
 
 	const title = $derived(tr(data.post.title, data.lang));
 	const excerpt = $derived(tr(data.post.excerpt, data.lang));
+	const tagNames = $derived(data.post.tags.map((t) => t.name));
+	const wordCount = $derived(
+		tr(data.post.content, data.lang)
+			.split(/\s+/)
+			.filter(Boolean).length
+	);
+
+	const meta = $derived(
+		buildMeta({
+			url: page.url,
+			lang: data.lang,
+			site: page.data.site,
+			title: `${title} · ${page.data.site.owner}`,
+			description: excerpt,
+			image:
+				data.post.coverImage ??
+				`/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(excerpt.slice(0, 80))}&kind=blog`,
+			type: 'article',
+			publishedTime: data.post.publishedAt
+				? new Date(data.post.publishedAt).toISOString()
+				: null,
+			tags: tagNames,
+			author: data.post.authorName ?? page.data.site.owner
+		})
+	);
+
+	const baseUrl = $derived(page.data.site.baseUrl.replace(/\/$/, ''));
+	const ld = $derived([
+		articleJsonLd({
+			site: page.data.site,
+			headline: title,
+			description: excerpt,
+			url: meta.canonical,
+			image: data.post.coverImage,
+			datePublished: data.post.publishedAt
+				? new Date(data.post.publishedAt).toISOString()
+				: null,
+			author: data.post.authorName ?? page.data.site.owner,
+			tags: tagNames,
+			wordCount,
+			timeRequiredMinutes: data.readingTimeMinutes
+		}),
+		breadcrumbJsonLd([
+			{ name: 'Home', url: absoluteUrl('/', baseUrl) },
+			{ name: 'Blog', url: absoluteUrl('/blog', baseUrl) },
+			{ name: title, url: meta.canonical }
+		])
+	]);
 </script>
 
-<svelte:head>
-	<title>{title} · Akmal MP</title>
-	<meta name="description" content={excerpt} />
-	<meta property="og:type" content="article" />
-	<meta property="og:title" content={title} />
-	<meta property="og:description" content={excerpt} />
-	{#if data.post.coverImage}
-		<meta property="og:image" content={data.post.coverImage} />
-	{/if}
-	<meta name="twitter:card" content="summary_large_image" />
-	<link rel="alternate" type="application/rss+xml" href="/rss.xml" title="Akmal MP — Blog" />
-</svelte:head>
+<SeoHead {meta} jsonLd={ld} />
 
 <ReadingProgress />
 
