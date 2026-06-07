@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="%paraglide.lang%">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#282c33" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
+		<script>
+			// FOUC prevention: apply theme class before hydration
+			(function () {
+				try {
+					const cookie = document.cookie
+						.split('; ')
+						.find((c) => c.startsWith('mode-watcher-mode='));
+					const stored = cookie ? cookie.split('=')[1] : 'system';
+					const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					const theme = stored === 'system' ? (prefersDark ? 'dark' : 'light') : stored;
+					if (theme === 'dark') document.documentElement.classList.add('dark');
+				} catch (e) {}
+			})();
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover" class="bg-background text-foreground antialiased">
+		<a
+			href="#main-content"
+			class="focus:bg-primary focus:text-background sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded focus:px-4 focus:py-2"
+			>Skip to content</a
+		>
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
