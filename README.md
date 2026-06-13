@@ -51,6 +51,51 @@ The app runs at `http://localhost:5173`.
 - Bun
 - Docker
 
+## MCP Blog Management
+
+The `mcp/` directory contains a standalone MCP server that lets an AI agent (e.g. Claude Desktop) manage blog posts directly via the database — no admin UI needed.
+
+### Setup
+
+```sh
+cd mcp
+npm install
+npm run build
+```
+
+### Connect to Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "blog-management": {
+      "command": "node",
+      "args": ["/absolute/path/to/web/mcp/dist/mcp/index.js"],
+      "env": {
+        "DATABASE_URL": "postgres://postgres:postgres@localhost:5433/portfolio"
+      }
+    }
+  }
+}
+```
+
+### Available tools
+
+| Tool | Description |
+| --- | --- |
+| `list_posts` | List posts with optional `status` filter (draft/published) |
+| `get_post` | Get a post by `id` or `slug` |
+| `create_post` | Create a draft post with Editor.js content |
+| `update_post` | Update fields of an existing post |
+| `publish_post` | Publish a post |
+| `unpublish_post` | Revert a post to draft |
+| `delete_post` | Hard-delete a post |
+| `generate_slug` | Generate a URL slug from a title |
+
+Content must be valid Editor.js JSON, e.g. `{"blocks":[{"type":"paragraph","data":{"text":"Hello"}}]}`.
+
 ## Contact
 
 - GitHub: `akmmp241`
