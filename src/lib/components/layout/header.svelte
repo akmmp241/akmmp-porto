@@ -93,7 +93,7 @@
 					opacity: 1
 				};
 			}
-		} else {
+		} else if (bubbleStyle.opacity !== 0) {
 			bubbleStyle = { ...bubbleStyle, opacity: 0 };
 		}
 	});
