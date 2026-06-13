@@ -1,96 +1,58 @@
-# web — SvelteKit portfolio
+# Akmal Muhammad Pridianto
 
-Phase 1 rewrite of the portfolio in SvelteKit with TypeScript, Tailwind v4, Paraglide 2 i18n, mode-watcher theming, and a Drizzle/Postgres skeleton wired in for later phases.
+Hi, I'm Akmal. I'm a software engineer who enjoys building backend systems that are reliable, practical, and easy to maintain.
 
-## Stack
+I mostly work around APIs, databases, payments, and service architecture. I like the part where a messy requirement turns into a clean flow that people can actually use. This portfolio is where I keep the projects I have built, the things I am learning, and a small blog for notes I do not want to lose.
 
-- SvelteKit (Svelte 5 runes) + adapter-node
-- TypeScript strict
-- Tailwind v4 (CSS-first config in `src/app.css`)
-- bits-ui primitives, `@lucide/svelte` icons, `motion` for spring physics
-- `mode-watcher` for SSR-safe dark/light/system theming
-- `@inlang/paraglide-js` for i18n (`en` default, `id` at `/id/...`)
-- Zod for static-data schemas
-- Drizzle ORM + postgres.js (skeleton, no schema yet)
-- Bun as package manager and runtime
-- Postgres 16 in Docker for dev
+Some of my recent work:
 
-## Scripts
+- PowerUP, a top up platform with online payment integration.
+- AkmalStore, a microservice API for an online top up platform.
+- Evia, a mobile app for recognizing external wounds with help from Gemini API.
 
-| Command                                                        | What it does                                    |
-| -------------------------------------------------------------- | ----------------------------------------------- |
-| `bun run dev`                                                  | Start vite dev server                           |
-| `bun run build`                                                | Production build via `adapter-node`             |
-| `bun run preview`                                              | Preview the production build                    |
-| `bun run check`                                                | `svelte-check` type check                       |
-| `bun run lint`                                                 | `prettier --check` + `eslint`                   |
-| `bun run format`                                               | `prettier --write`                              |
-| `bun run paraglide:compile`                                    | Recompile messages from `messages/{en,id}.json` |
-| `bun run db:up` / `db:down`                                    | Start / stop the dev Postgres container         |
-| `bun run db:generate` / `db:migrate` / `db:push` / `db:studio` | Drizzle Kit commands                            |
+This site is built with SvelteKit, TypeScript, Tailwind CSS, Paraglide for i18n, and Drizzle with Postgres. It also has an admin area, Editor.js blog editing, contact messages, guestbook entries, analytics, and theme support.
 
-## Local setup
+## Running locally
 
 ```sh
 cp .env.example .env
 bun install
 bun run paraglide:compile
-bun run db:up        # starts postgres on :5432
-bun run dev          # http://localhost:5173
+bun run db:up
+bun run dev
 ```
 
-## i18n
+The app runs at `http://localhost:5173`.
 
-- Source messages live in `messages/{en,id}.json`. Re-run `bun run paraglide:compile` after edits (the vite plugin also recompiles on dev start).
-- URL strategy: `en` is bare (`/projects`), `id` is prefixed (`/id/projects`).
-- Locale resolution: URL → cookie → `accept-language` → default (`en`), driven by paraglide's `paraglideMiddleware` in `src/hooks.server.ts`.
+## Useful commands
 
-## Theme
+| Command | What it does |
+| --- | --- |
+| `bun run dev` | Start the dev server |
+| `bun run build` | Build for production |
+| `bun run preview` | Preview the production build |
+| `bun run check` | Run Svelte and TypeScript checks |
+| `bun run lint` | Run Prettier check and ESLint |
+| `bun run format` | Format the codebase |
+| `bun run db:up` | Start the local Postgres container |
+| `bun run db:down` | Stop the local Postgres container |
+| `bun run db:generate` | Generate Drizzle migrations |
+| `bun run db:migrate` | Run Drizzle migrations |
+| `bun run db:studio` | Open Drizzle Studio |
 
-- `mode-watcher` ships an inline pre-hydration script via `<ModeWatcher />` and a cookie (`mode-watcher-mode`).
-- The `app.html` script also reads the cookie before hydration to avoid FOUC.
-- Toggle cycles: `light → dark → system`, with a circular clip-path reveal driven by the View Transitions API where supported (graceful fallback otherwise).
+## Stack
 
-## Database (skeleton)
+- SvelteKit and Svelte 5
+- TypeScript
+- Tailwind CSS v4
+- Paraglide i18n
+- Drizzle ORM and Postgres
+- Editor.js
+- Bun
+- Docker
 
-- `docker-compose.yml` provisions a Postgres 16 container with a healthcheck and named volume.
-- `src/lib/server/db/index.ts` lazy-instantiates a `postgres.js` client + Drizzle instance from `DATABASE_URL`. Phase 1 does not query anything; the schema in `src/lib/server/db/schema.ts` is intentionally empty.
-- `drizzle.config.ts` points migrations at `./drizzle/` for Phase 2+.
+## Contact
 
-## Production deploy
-
-```sh
-docker compose -f docker-compose.prod.yml up --build
-```
-
-App listens on `:3000`. The image is multi-stage (Bun → Bun build → Node 20 runtime running `node build`).
-
-## Repo layout
-
-```
-web/
-├── src/
-│   ├── routes/                  # /, /projects, /about, /contact (paraglide handles /id/*)
-│   ├── lib/
-│   │   ├── components/{ui,fx,layout,sections}/
-│   │   ├── data/                # zod-validated static content
-│   │   ├── server/db/           # drizzle skeleton
-│   │   ├── paraglide/           # generated, gitignored
-│   │   ├── i18n.ts              # tr(), localePath() helpers
-│   │   └── utils/cn.ts
-│   ├── params/lang.ts
-│   ├── hooks.server.ts
-│   ├── hooks.ts                 # paraglide reroute
-│   ├── app.html
-│   ├── app.css
-│   └── app.d.ts
-├── messages/{en,id}.json
-├── project.inlang/settings.json
-├── static/                      # public assets, /resume.pdf placeholder
-├── drizzle/                     # migrations (empty for P1)
-├── drizzle.config.ts
-├── Dockerfile
-├── docker-compose.yml           # postgres (dev)
-├── docker-compose.prod.yml      # app + postgres
-└── ...
-```
+- GitHub: `akmmp241`
+- Email: `akmalmp241@gmail.com`
+- LinkedIn: `akmalmuhammadp`
