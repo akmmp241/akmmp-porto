@@ -15,7 +15,7 @@ type EditorJSBlock =
 	| { type: 'paragraph'; data: { text: string } }
 	| { type: 'list'; data: { style: 'ordered' | 'unordered'; items: Array<string | { content: string; meta?: any; items?: any[] }> } }
 	| { type: 'code'; data: { code: string; language?: string } }
-	| { type: 'image'; data: { url: string; caption?: string; withBorder?: boolean; stretched?: boolean; withBackground?: boolean } }
+	| { type: 'image'; data: { url?: string; file?: { url?: string }; caption?: string; withBorder?: boolean; stretched?: boolean; withBackground?: boolean } }
 	| { type: 'quote'; data: { text: string; caption?: string; alignment?: string } }
 	| { type: 'embed'; data: { service: string; source: string; embed: string; width?: number; height?: number; caption?: string } }
 	| { type: 'callout'; data: { text: string; variant: 'info' | 'warning' | 'tip' | 'danger' } }
@@ -167,7 +167,8 @@ async function renderBlock(block: EditorJSBlock, toc: TocEntry[]): Promise<strin
 		}
 
 		case 'image': {
-			const { url, caption, withBorder, stretched, withBackground } = block.data;
+			const { caption, withBorder, stretched, withBackground } = block.data;
+			const url = block.data.file?.url ?? block.data.url;
 			if (!url || !isSafeUrl(url)) return '';
 			const classes = [];
 			if (withBorder) classes.push('image-border');

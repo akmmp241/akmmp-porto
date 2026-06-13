@@ -213,6 +213,11 @@
 		font-family: var(--font-mono);
 	}
 	.prose-portfolio img {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		height: auto;
+		object-fit: contain;
 		border-radius: 0.5rem;
 		border: 1px solid var(--color-border);
 	}

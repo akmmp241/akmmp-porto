@@ -28,7 +28,8 @@
 	const excerpt = $derived(tr(data.post.excerpt, data.lang));
 	const tagNames = $derived(data.post.tags.map((t) => t.name));
 	const wordCount = $derived(
-		tr(data.post.content, data.lang)
+		data.html
+			.replace(/<[^>]*>/g, ' ')
 			.split(/\s+/)
 			.filter(Boolean).length
 	);
