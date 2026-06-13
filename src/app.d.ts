@@ -8,6 +8,7 @@ declare global {
 			lang: 'en' | 'id';
 			user: SafeUser | null;
 			session: AuthSession | null;
+			ip: string;
 		}
 	}
 }

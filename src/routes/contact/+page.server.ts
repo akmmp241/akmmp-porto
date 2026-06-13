@@ -14,14 +14,14 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, getClientAddress, setHeaders }) => {
+	default: async ({ request, locals, setHeaders }) => {
 		const form = await superValidate(request, zod(contactFormSchema));
 
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
-		const ip = getClientAddress();
+		const ip = locals.ip;
 
 		// 1. Honeypot check
 		if (form.data.honeypot) {

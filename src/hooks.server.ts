@@ -9,6 +9,7 @@ import {
 	validateSessionToken
 } from '$lib/server/auth';
 import { trackPageView, isBot } from '$lib/server/analytics';
+import { getClientIp } from '$lib/server/client-ip';
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request, locale }) => {
@@ -18,6 +19,11 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 			transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
 		});
 	});
+
+const handleClientIp: Handle = ({ event, resolve }) => {
+	event.locals.ip = getClientIp(event);
+	return resolve(event);
+};
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const token = event.cookies.get(SESSION_COOKIE_NAME);
@@ -68,18 +74,7 @@ const handleAnalytics: Handle = async ({ event, resolve }) => {
 		// Only track HTML navigations — check Accept header
 		const accept = event.request.headers.get('accept') ?? '';
 		if (accept.includes('text/html')) {
-			// Extract client IP — X-Forwarded-For if behind proxy, fallback to connection IP
-			const xff = event.request.headers.get('x-forwarded-for');
-			let ip = '0.0.0.0';
-			if (xff) {
-				ip = xff.split(',')[0].trim();
-			} else {
-				try {
-					ip = event.getClientAddress() ?? '0.0.0.0';
-				} catch {
-					// clientAddress could not be determined (e.g. in dev environment)
-				}
-			}
+			const ip = event.locals.ip;
 			const referrer = event.request.headers.get('referer');
 
 			// Fire-and-forget — errors logged inside trackPageView, never surface to user
@@ -90,5 +85,5 @@ const handleAnalytics: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle: Handle = sequence(handleParaglide, handleAuth, handleAdminGuard, handleAnalytics);
+export const handle: Handle = sequence(handleParaglide, handleClientIp, handleAuth, handleAdminGuard, handleAnalytics);
 
