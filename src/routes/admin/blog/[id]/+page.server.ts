@@ -6,7 +6,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { blogPostFormSchema } from '$lib/schemas/admin';
-import { computeReadingTime } from '$lib/server/markdown';
+import { computeEditorJsReadingTime } from '$lib/server/editorjs-renderer';
 import { parseTagCsv, pruneOrphanTags, syncPostTags } from '$lib/server/tags';
 import { refreshSearchIndex } from '$lib/server/search';
 import { deleteProjectImage } from '$lib/server/upload';
@@ -37,8 +37,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			titleId: row.title.id,
 			excerptEn: row.excerpt.en,
 			excerptId: row.excerpt.id,
-			contentEn: row.content.en,
-			contentId: row.content.id,
+			content: typeof row.content === 'string' ? row.content : (row.content as { en?: string }).en ?? '',
+			contentFormat: row.contentFormat,
 			coverImage: row.coverImage ?? '',
 			tags: tagRows.map((t) => t.name).join(', '),
 			published: row.published,
@@ -68,10 +68,7 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		const readingTime = Math.max(
-			computeReadingTime(form.data.contentEn),
-			computeReadingTime(form.data.contentId)
-		);
+		const readingTime = await computeEditorJsReadingTime(form.data.contentFormat, form.data.content);
 
 		const publishedAtParsed =
 			form.data.published && form.data.publishedAt
@@ -96,7 +93,8 @@ export const actions: Actions = {
 				slug: form.data.slug,
 				title: { en: form.data.titleEn, id: form.data.titleId },
 				excerpt: { en: form.data.excerptEn, id: form.data.excerptId },
-				content: { en: form.data.contentEn, id: form.data.contentId },
+				content: form.data.content,
+				contentFormat: form.data.contentFormat,
 				coverImage: form.data.coverImage || null,
 				published: form.data.published,
 				publishedAt: publishedAtParsed,

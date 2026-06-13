@@ -85,12 +85,12 @@ export const blogPostFormSchema = z.object({
 	titleId: z.string().trim().min(1, 'Required'),
 	excerptEn: z.string().trim().min(1, 'Required').max(280, 'Max 280 chars'),
 	excerptId: z.string().trim().min(1, 'Required').max(280, 'Max 280 chars'),
-	contentEn: z.string().min(1, 'Required'),
-	contentId: z.string().min(1, 'Required'),
-	coverImage: z.string().trim().optional(),
+	content: z.string().min(1, 'Required'),
+	contentFormat: z.enum(['markdown', 'editorjs']).default('editorjs'),
+	coverImage: z.string().trim().default(''),
 	tags: z.string().default(''), // CSV → split server-side
 	published: z.boolean().default(false),
-	publishedAt: z.string().trim().optional()
+	publishedAt: z.string().trim().default('')
 });
 export type BlogPostFormSchema = typeof blogPostFormSchema;
 

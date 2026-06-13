@@ -2,9 +2,10 @@
 	import { superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { dirty } from '$lib/stores/dirty';
 	import { onDestroy } from 'svelte';
-	import { Loader2, Save, ArrowLeft, Trash2, Eye, FileText } from '@lucide/svelte';
+	import { Loader2, Save, ArrowLeft, Trash2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import ImageDropzone from './image-dropzone.svelte';
+	import BlockEditor from './block-editor.svelte';
 	import type { BlogPostFormSchema } from '$lib/schemas/admin';
 	import type { Infer } from 'sveltekit-superforms';
 
@@ -37,7 +38,6 @@
 	onDestroy(() => dirty.clear(dirtyKey));
 
 	let activeLocale = $state<'en' | 'id'>('en');
-	let preview = $state(false);
 
 	function autoSlug() {
 		if ($form.slug) return;
@@ -64,6 +64,7 @@
 </div>
 
 <form method="POST" {action} use:enhance class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+	<input type="hidden" name="contentFormat" bind:value={$form.contentFormat} />
 	<div class="space-y-5 lg:col-span-2">
 		<section class="rounded-xl border border-border bg-card/40 p-5 backdrop-blur-sm">
 			<div class="mb-4 flex items-center justify-between">
@@ -89,23 +90,6 @@
 								: 'text-muted-foreground hover:text-foreground'
 						)}
 					>ID</button>
-					<div class="mx-1 h-4 w-px bg-border"></div>
-					<button
-						type="button"
-						onclick={() => (preview = !preview)}
-						class={cn(
-							'flex items-center gap-1 rounded px-2.5 py-1 transition-colors',
-							preview
-								? 'bg-primary/15 text-primary'
-								: 'text-muted-foreground hover:text-foreground'
-						)}
-					>
-						{#if preview}
-							<FileText class="h-3 w-3" /> Edit
-						{:else}
-							<Eye class="h-3 w-3" /> Preview
-						{/if}
-					</button>
 				</div>
 			</div>
 
@@ -183,48 +167,11 @@
 					</label>
 				</div>
 
-				<div class={cn(activeLocale === 'en' ? 'block' : 'hidden')}>
+				<div>
 					<label class="flex flex-col gap-1.5">
-						<span class="text-xs font-medium text-muted-foreground">Body (EN, Markdown)</span>
-						{#if preview}
-							<div class="prose prose-sm dark:prose-invert min-h-64 rounded-md border border-input bg-background/40 px-3 py-3">
-								<pre class="whitespace-pre-wrap font-mono text-xs text-muted-foreground">{$form.contentEn}</pre>
-							</div>
-						{:else}
-							<textarea
-								name="contentEn"
-								rows="20"
-								bind:value={$form.contentEn}
-								spellcheck="false"
-								class={cn(
-									'min-h-64 rounded-md border border-input bg-background px-3 py-2 font-mono text-sm leading-relaxed outline-none transition-colors focus:border-primary',
-									$errors.contentEn && 'border-destructive'
-								)}
-							></textarea>
-						{/if}
-						{#if $errors.contentEn}<p class="text-xs text-destructive">{$errors.contentEn[0]}</p>{/if}
-					</label>
-				</div>
-				<div class={cn(activeLocale === 'id' ? 'block' : 'hidden')}>
-					<label class="flex flex-col gap-1.5">
-						<span class="text-xs font-medium text-muted-foreground">Body (ID, Markdown)</span>
-						{#if preview}
-							<div class="prose prose-sm dark:prose-invert min-h-64 rounded-md border border-input bg-background/40 px-3 py-3">
-								<pre class="whitespace-pre-wrap font-mono text-xs text-muted-foreground">{$form.contentId}</pre>
-							</div>
-						{:else}
-							<textarea
-								name="contentId"
-								rows="20"
-								bind:value={$form.contentId}
-								spellcheck="false"
-								class={cn(
-									'min-h-64 rounded-md border border-input bg-background px-3 py-2 font-mono text-sm leading-relaxed outline-none transition-colors focus:border-primary',
-									$errors.contentId && 'border-destructive'
-								)}
-							></textarea>
-						{/if}
-						{#if $errors.contentId}<p class="text-xs text-destructive">{$errors.contentId[0]}</p>{/if}
+						<span class="text-xs font-medium text-muted-foreground">Body</span>
+						<BlockEditor bind:value={$form.content} uploadEndpoint="/admin/api/upload/blog-image" />
+						{#if $errors.content}<p class="text-xs text-destructive">{$errors.content[0]}</p>{/if}
 					</label>
 				</div>
 			</div>

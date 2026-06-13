@@ -119,7 +119,7 @@ export interface BlogListItem {
 }
 
 export interface BlogPostDetail extends BlogListItem {
-	content: { en: string; id: string };
+	content: string;
 	authorName: string | null;
 }
 

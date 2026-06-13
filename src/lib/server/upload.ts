@@ -47,14 +47,19 @@ function uuid(): string {
 
 const UPLOAD_ROOT = path.resolve('static/uploads');
 const PROJECTS_DIR = path.join(UPLOAD_ROOT, 'projects');
+const BLOG_DIR = path.join(UPLOAD_ROOT, 'blog');
 
-async function ensureDir() {
-	if (!existsSync(PROJECTS_DIR)) {
-		await mkdir(PROJECTS_DIR, { recursive: true });
+async function ensureDir(dir: string) {
+	if (!existsSync(dir)) {
+		await mkdir(dir, { recursive: true });
 	}
 }
 
-export async function saveProjectImage(file: File): Promise<string> {
+export async function saveImage(
+	file: File,
+	subdir: string,
+	maxDimension: number
+): Promise<string> {
 	if (file.size === 0) throw error(400, 'Empty file');
 	if (file.size > MAX_BYTES) throw error(400, 'File too large (max 2MB)');
 	if (!ALLOWED_MIME.has(file.type)) throw error(400, 'Invalid file type');
@@ -65,20 +70,29 @@ export async function saveProjectImage(file: File): Promise<string> {
 		throw error(400, 'File contents do not match an allowed image format');
 	}
 
-	await ensureDir();
+	const targetDir = path.join(UPLOAD_ROOT, subdir);
+	await ensureDir(targetDir);
 
 	// Re-encode to WebP via sharp → strips metadata + caps dimensions
 	const out = await sharp(buf)
 		.rotate()
-		.resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+		.resize({ width: maxDimension, height: maxDimension, fit: 'inside', withoutEnlargement: true })
 		.webp({ quality: 82 })
 		.toBuffer();
 
 	const filename = `${uuid()}.webp`;
-	const fullPath = path.join(PROJECTS_DIR, filename);
+	const fullPath = path.join(targetDir, filename);
 	await writeFile(fullPath, out);
 
-	return `/uploads/projects/${filename}`;
+	return `/uploads/${subdir}/${filename}`;
+}
+
+export async function saveProjectImage(file: File): Promise<string> {
+	return saveImage(file, 'projects', 1920);
+}
+
+export async function saveBlogImage(file: File): Promise<string> {
+	return saveImage(file, 'blog', 2560);
 }
 
 export async function deleteProjectImage(publicPath: string | null | undefined): Promise<void> {
