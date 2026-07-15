@@ -10,7 +10,11 @@
 <ModeWatcher />
 
 {#if data.user}
-	<AdminShell user={data.user}>
+	<AdminShell
+		user={data.user}
+		unreadMessages={data.unreadMessages}
+		pendingGuestbook={data.pendingGuestbook}
+	>
 		{@render children()}
 	</AdminShell>
 {:else}
