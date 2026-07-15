@@ -9,7 +9,6 @@ import { blogPostFormSchema } from '$lib/schemas/admin';
 import { computeEditorJsReadingTime } from '$lib/server/editorjs-renderer';
 import { parseTagCsv, syncPostTags } from '$lib/server/tags';
 import { refreshSearchIndex } from '$lib/server/search';
-import { deleteProjectImage } from '$lib/server/upload';
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(blogPostFormSchema));

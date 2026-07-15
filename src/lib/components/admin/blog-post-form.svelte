@@ -63,7 +63,7 @@
 	</h1>
 </div>
 
-<form method="POST" {action} use:enhance class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+<form method="POST" {action} use:enhance class="grid grid-cols-1 gap-6 lg:grid-cols-3" aria-label={mode === 'new' ? 'Create post' : 'Edit post'}>
 	<input type="hidden" name="contentFormat" bind:value={$form.contentFormat} />
 	<div class="space-y-5 lg:col-span-2">
 		<section class="rounded-xl border border-border bg-card/40 p-5 backdrop-blur-sm">
@@ -169,7 +169,8 @@
 
 				<div>
 					<label class="flex flex-col gap-1.5">
-						<span class="text-xs font-medium text-muted-foreground">Body</span>
+						<span id="body-label" class="text-xs font-medium text-muted-foreground">Body</span>
+							<span id="body-help" class="text-xs text-muted-foreground">Type / to insert a block. Use plus to browse blocks.</span>
 						<BlockEditor bind:value={$form.content} uploadEndpoint="/admin/api/upload/blog-image" />
 						{#if $errors.content}<p class="text-xs text-destructive">{$errors.content[0]}</p>{/if}
 					</label>
@@ -236,23 +237,28 @@
 		</div>
 
 		{#if mode === 'edit'}
-			<form
-				method="POST"
-				action="?/delete"
-				onsubmit={(e) => {
-					if (!confirm('Delete this post? This cannot be undone.')) e.preventDefault();
-				}}
-				class="rounded-xl border border-destructive/30 bg-destructive/5 p-4"
-			>
+			<div class="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
 				<h3 class="text-xs font-medium text-destructive">Danger zone</h3>
 				<p class="mt-1 text-xs text-muted-foreground">Permanently delete this post.</p>
 				<button
 					type="submit"
+					form="delete-post"
 					class="mt-3 inline-flex h-8 items-center gap-1.5 rounded-md bg-destructive px-3 text-xs font-medium text-white"
 				>
 					<Trash2 class="h-3.5 w-3.5" /> Delete post
 				</button>
-			</form>
+			</div>
 		{/if}
 	</aside>
 </form>
+
+{#if mode === 'edit'}
+	<form
+		id="delete-post"
+		method="POST"
+		action="?/delete"
+		onsubmit={(e) => {
+			if (!confirm('Delete this post? This cannot be undone.')) e.preventDefault();
+		}}
+	></form>
+{/if}
