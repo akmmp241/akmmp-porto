@@ -19,5 +19,6 @@ Dockerfile
 .dockerignore
 coverage
 tests
+graphify-out
 **/*.test.ts
 **/*.spec.ts
