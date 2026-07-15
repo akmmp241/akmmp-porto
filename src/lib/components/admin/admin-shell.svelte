@@ -218,8 +218,8 @@
 	</aside>
 
 	<!-- Main -->
-	<main class="flex-1">
-		<header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-6 backdrop-blur-md">
+	<main class="min-w-0 flex-1">
+		<header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
 			<button
 				type="button"
 				onclick={() => (paletteOpen = true)}
@@ -231,7 +231,7 @@
 			</button>
 		</header>
 
-		<div class="px-6 py-8">
+		<div class="px-4 py-6 sm:px-6 sm:py-8">
 			{@render children()}
 		</div>
 	</main>
