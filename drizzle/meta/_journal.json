@@ -50,6 +50,13 @@
       "when": 1781350571168,
       "tag": "0006_sad_domino",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784145620847,
+      "tag": "0007_brainy_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

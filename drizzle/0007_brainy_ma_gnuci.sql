@@ -1,0 +1,2 @@
+ALTER TABLE "api_keys" ADD COLUMN "user_id" text NOT NULL;--> statement-breakpoint
+ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;
