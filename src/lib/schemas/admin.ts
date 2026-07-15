@@ -17,7 +17,7 @@ export const projectFormSchema = z.object({
 	descriptionEn: z.string().trim().min(1, 'Required'),
 	descriptionId: z.string().trim().min(1, 'Required'),
 	techstack: z.string().default(''), // CSV → split server-side
-	image: z.string().trim().optional(),
+	image: z.string().trim().default(''),
 	badgeFe: optionalUrl,
 	badgeBe: optionalUrl,
 	badgeLive: optionalUrl,
