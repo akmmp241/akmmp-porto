@@ -194,6 +194,27 @@ export type GuestbookEntryRow = typeof guestbookEntries.$inferSelect;
 export type RateLimitRow = typeof rateLimits.$inferSelect;
 export type AuditLogRow = typeof auditLog.$inferSelect;
 
+// ───── API Keys ──────────────────────────────────────────────────────────────
+
+export const apiKeys = pgTable('api_keys', {
+	id: serial('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => authUser.id, { onDelete: 'cascade' }),
+	label: text('label').notNull(),
+	hashedKey: text('hashed_key').notNull().unique(),
+	prefix: text('prefix').notNull(),
+	scopes: text('scopes')
+		.array()
+		.notNull()
+		.default(sql`ARRAY[]::text[]`),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+	revokedAt: timestamp('revoked_at', { withTimezone: true })
+});
+
+export type ApiKeyRow = typeof apiKeys.$inferSelect;
+
 // ───── Analytics ─────────────────────────────────────────────────────────────
 
 /**
