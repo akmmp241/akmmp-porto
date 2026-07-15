@@ -43,6 +43,13 @@
       "when": 1781071224249,
       "tag": "0005_clear_odin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781350571168,
+      "tag": "0006_sad_domino",
+      "breakpoints": true
     }
   ]
 }
