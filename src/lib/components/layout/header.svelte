@@ -145,14 +145,14 @@
 
 					{#each navs as nav, i (nav.key)}
 						<li
-							class="nav-item relative z-10 text-base"
+							class="nav-item relative z-10 text-base leading-none"
 							onmouseenter={() => (hoveredIndex = i)}
 							onmouseleave={() => (hoveredIndex = null)}
 						>
 							<a
 								href={localizeHref(nav.href)}
 								class={cn(
-									'block rounded-full px-4 py-1.5 transition-colors duration-200 hover:text-foreground',
+									'block h-9 rounded-full px-4 py-1.5 leading-6 transition-colors duration-200 hover:text-foreground',
 									isActive(nav.href) ? 'text-primary font-semibold' : 'text-muted-foreground'
 								)}
 							>

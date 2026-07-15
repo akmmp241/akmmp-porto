@@ -25,12 +25,35 @@
 	import CommandPalette from './command-palette.svelte';
 	import DirtyPill from './dirty-pill.svelte';
 
-	let { user, children }: { user: SafeUser; children: import('svelte').Snippet } = $props();
+	type BadgeKey = 'unreadMessages' | 'pendingGuestbook';
+
+	let {
+		user,
+		unreadMessages = 0,
+		pendingGuestbook = 0,
+		children
+	}: {
+		user: SafeUser;
+		unreadMessages?: number;
+		pendingGuestbook?: number;
+		children: import('svelte').Snippet;
+	} = $props();
+
+	const badgeCounts: Record<BadgeKey, number> = {
+		unreadMessages,
+		pendingGuestbook
+	};
 
 	let collapsed = $state(false);
 	let paletteOpen = $state(false);
 
-	const nav = [
+	const nav: Array<{
+		href: string;
+		label: string;
+		icon: typeof LayoutDashboard;
+		exact?: boolean;
+		badgeKey?: BadgeKey;
+	}> = [
 		{ href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
 		{ href: '/admin/projects', label: 'Projects', icon: FolderKanban },
 		{ href: '/admin/blog', label: 'Blog', icon: FileText },
@@ -117,12 +140,12 @@
 							{#if !collapsed}
 								<span class="truncate">{item.label}</span>
 								<!-- Badge with pulsing indicator -->
-								{#if item.badgeKey && page.data[item.badgeKey] > 0}
+								{#if item.badgeKey && badgeCounts[item.badgeKey] > 0}
 									<span class="ml-auto relative flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1.5 text-[10px] font-semibold text-primary transition-all animate-pulse">
-										{page.data[item.badgeKey]}
+										{badgeCounts[item.badgeKey]}
 									</span>
 								{/if}
-							{:else if item.badgeKey && page.data[item.badgeKey] > 0}
+							{:else if item.badgeKey && badgeCounts[item.badgeKey] > 0}
 								<!-- Compact dot badge when sidebar is collapsed -->
 								<span class="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-primary border-2 border-background"></span>
 							{/if}
