@@ -53,9 +53,59 @@ The app runs at `http://localhost:5173`.
 
 ## MCP Blog Management
 
-The `mcp/` directory contains a standalone MCP server that lets an AI agent (e.g. Claude Desktop) manage blog posts directly via the database — no admin UI needed.
+App menyediakan MCP endpoint di `/mcp` untuk AI Agent yang perlu membaca dan mengelola draft blog. Endpoint memakai Streamable HTTP dan Bearer API key.
 
-### Setup
+### 1. Buat API key
+
+1. Login sebagai admin.
+2. Buka `/admin/settings/api-keys`.
+3. Buat key dengan scope yang dibutuhkan:
+   - `blog:read`: membaca draft dan membuat slug.
+   - `blog:create_draft`: membuat draft.
+   - `blog:update_draft`: mengubah draft.
+4. Salin raw key saat ditampilkan. Key hanya muncul sekali.
+
+### 2. Daftarkan MCP ke AI Agent
+
+Gunakan URL aplikasi ditambah `/mcp`. Contoh konfigurasi Claude Desktop di `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "blog-management": {
+      "type": "streamable-http",
+      "url": "http://localhost:5173/mcp",
+      "headers": {
+        "Authorization": "Bearer <API_KEY>"
+      }
+    }
+  }
+}
+```
+
+Ganti URL dengan URL deployment aplikasi. Ganti `<API_KEY>` dengan raw key, lalu restart AI Agent agar server MCP terhubung.
+
+### Tools yang tersedia
+
+| Tool | Scope | Deskripsi |
+| --- | --- | --- |
+| `list_posts` | `blog:read` | List draft dengan pagination |
+| `get_post` | `blog:read` | Baca draft berdasarkan `id` atau `slug` |
+| `create_post` | `blog:create_draft` | Buat draft baru |
+| `update_post` | `blog:update_draft` | Ubah draft berdasarkan `id` |
+| `generate_slug` | `blog:read` | Buat slug lowercase dari judul |
+
+`content` harus berupa JSON Editor.js yang valid dan dikirim sebagai string, misalnya:
+
+```json
+{"blocks":[{"type":"paragraph","data":{"text":"Hello"}}]}
+```
+
+MCP hanya mengelola draft. Publish dilakukan dari admin UI setelah draft selesai ditinjau.
+
+### Standalone server
+
+Direktori `mcp/` berisi server stdio untuk client yang tidak mendukung koneksi HTTP. Server ini memerlukan `BLOG_API_URL` dan `BLOG_API_KEY`.
 
 ```sh
 cd mcp
@@ -63,9 +113,7 @@ npm install
 npm run build
 ```
 
-### Connect to Claude Desktop
-
-Add to `claude_desktop_config.json`:
+Contoh konfigurasi client stdio:
 
 ```json
 {
@@ -74,27 +122,15 @@ Add to `claude_desktop_config.json`:
       "command": "node",
       "args": ["/absolute/path/to/web/mcp/dist/mcp/index.js"],
       "env": {
-        "DATABASE_URL": "postgres://postgres:postgres@localhost:5433/portfolio"
+        "BLOG_API_URL": "http://localhost:5173",
+        "BLOG_API_KEY": "<API_KEY>"
       }
     }
   }
 }
 ```
 
-### Available tools
-
-| Tool | Description |
-| --- | --- |
-| `list_posts` | List posts with optional `status` filter (draft/published) |
-| `get_post` | Get a post by `id` or `slug` |
-| `create_post` | Create a draft post with Editor.js content |
-| `update_post` | Update fields of an existing post |
-| `publish_post` | Publish a post |
-| `unpublish_post` | Revert a post to draft |
-| `delete_post` | Hard-delete a post |
-| `generate_slug` | Generate a URL slug from a title |
-
-Content must be valid Editor.js JSON, e.g. `{"blocks":[{"type":"paragraph","data":{"text":"Hello"}}]}`.
+Server standalone memakai API yang sama dan hanya menerima raw API key melalui environment variable.
 
 ## Contact
 
