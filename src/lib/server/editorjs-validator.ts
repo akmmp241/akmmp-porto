@@ -209,6 +209,18 @@ export interface ValidationResult {
 	errors: ValidationError[];
 }
 
+export function isEditorJsContent(raw: unknown): boolean {
+	let value = raw;
+	if (typeof value === 'string') {
+		try {
+			value = JSON.parse(value);
+		} catch {
+			return false;
+		}
+	}
+	return isPlainObject(value) && Array.isArray(value.blocks);
+}
+
 export function validateEditorJsContent(raw: unknown): ValidationResult {
 	const errors: ValidationError[] = [];
 

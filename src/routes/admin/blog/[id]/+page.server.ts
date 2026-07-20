@@ -7,6 +7,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { blogPostFormSchema } from '$lib/schemas/admin';
 import { computeEditorJsReadingTime } from '$lib/server/editorjs-renderer';
+import { isEditorJsContent, validateEditorJsContent } from '$lib/server/editorjs-validator';
 import { parseTagCsv, pruneOrphanTags, syncPostTags } from '$lib/server/tags';
 import { refreshSearchIndex } from '$lib/server/search';
 import { deleteProjectImage } from '$lib/server/upload';
@@ -29,6 +30,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				.toISOString()
 				.slice(0, 16)
 		: '';
+	const bodyEditable = row.contentFormat === 'editorjs' && isEditorJsContent(row.content);
+	const content = typeof row.content === 'string' ? row.content : JSON.stringify(row.content);
 
 	const form = await superValidate(
 		{
@@ -37,7 +40,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			titleId: row.title.id,
 			excerptEn: row.excerpt.en,
 			excerptId: row.excerpt.id,
-			content: typeof row.content === 'string' ? row.content : (row.content as { en?: string }).en ?? '',
+			content,
 			contentFormat: row.contentFormat,
 			coverImage: row.coverImage ?? '',
 			tags: tagRows.map((t) => t.name).join(', '),
@@ -47,7 +50,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		zod(blogPostFormSchema)
 	);
 
-	return { form, mode: 'edit' as const, post: row };
+	return { form, mode: 'edit' as const, post: row, bodyEditable };
 };
 
 export const actions: Actions = {
@@ -59,6 +62,17 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(blogPostFormSchema));
 		if (!form.valid) return fail(400, { form });
 
+		const [existing] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+		if (!existing) throw error(404, 'Post not found');
+		const bodyEditable = existing.contentFormat === 'editorjs' && isEditorJsContent(existing.content);
+		if (bodyEditable) {
+			const validation = validateEditorJsContent(form.data.content);
+			if (!validation.ok) {
+				form.errors.content = [validation.errors[0].message];
+				return fail(400, { form });
+			}
+		}
+
 		const [conflict] = await db
 			.select({ c: count() })
 			.from(blogPosts)
@@ -68,22 +82,18 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		const readingTime = await computeEditorJsReadingTime(form.data.contentFormat, form.data.content);
+		const content = bodyEditable ? form.data.content : existing.content;
+		const contentFormat = bodyEditable ? 'editorjs' : existing.contentFormat;
+		const readingTime = bodyEditable
+			? await computeEditorJsReadingTime(contentFormat, form.data.content)
+			: existing.readingTime;
+		const publishedAtParsed = form.data.published && form.data.publishedAt
+			? new Date(form.data.publishedAt)
+			: form.data.published
+				? new Date()
+				: null;
 
-		const publishedAtParsed =
-			form.data.published && form.data.publishedAt
-				? new Date(form.data.publishedAt)
-				: form.data.published
-					? new Date()
-					: null;
-
-		const [existing] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
-		if (
-			existing &&
-			existing.coverImage &&
-			form.data.coverImage &&
-			existing.coverImage !== form.data.coverImage
-		) {
+		if (existing.coverImage && form.data.coverImage && existing.coverImage !== form.data.coverImage) {
 			await deleteProjectImage(existing.coverImage);
 		}
 
@@ -93,8 +103,8 @@ export const actions: Actions = {
 				slug: form.data.slug,
 				title: { en: form.data.titleEn, id: form.data.titleId },
 				excerpt: { en: form.data.excerptEn, id: form.data.excerptId },
-				content: form.data.content,
-				contentFormat: form.data.contentFormat,
+				content,
+				contentFormat,
 				coverImage: form.data.coverImage || null,
 				published: form.data.published,
 				publishedAt: publishedAtParsed,

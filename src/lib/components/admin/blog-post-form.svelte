@@ -13,15 +13,20 @@
 		form: SuperValidated<Infer<BlogPostFormSchema>>;
 		mode: 'new' | 'edit';
 		postId?: number;
+		bodyEditable?: boolean;
 	};
 
-	let { form: initial, mode, postId }: Props = $props();
+	let { form: initial, mode, postId, bodyEditable = true }: Props = $props();
 
 	const action = mode === 'new' ? '' : '?/update';
 	const dirtyKey = `blog:${mode}:${postId ?? 'new'}`;
+	let blockEditor: BlockEditor;
 
 	const sf = superForm(initial, {
 		dataType: 'json',
+		onSubmit: async () => {
+			await blockEditor?.flush();
+		},
 		resetForm: false,
 		taintedMessage: null,
 		onUpdated: ({ form }) => {
@@ -65,6 +70,7 @@
 
 <form method="POST" {action} use:enhance class="grid grid-cols-1 gap-6 lg:grid-cols-3" aria-label={mode === 'new' ? 'Create post' : 'Edit post'}>
 	<input type="hidden" name="contentFormat" bind:value={$form.contentFormat} />
+		<input type="hidden" name="content" bind:value={$form.content} />
 	<div class="space-y-5 lg:col-span-2">
 		<section class="rounded-xl border border-border bg-card/40 p-5 backdrop-blur-sm">
 			<div class="mb-4 flex items-center justify-between">
@@ -171,7 +177,7 @@
 					<label class="flex flex-col gap-1.5">
 						<span id="body-label" class="text-xs font-medium text-muted-foreground">Body</span>
 							<span id="body-help" class="text-xs text-muted-foreground">Type / to insert a block. Use plus to browse blocks.</span>
-						<BlockEditor bind:value={$form.content} uploadEndpoint="/admin/api/upload/blog-image" />
+						<BlockEditor bind:this={blockEditor} bind:value={$form.content} uploadEndpoint="/admin/api/upload/blog-image" readonly={!bodyEditable} />
 						{#if $errors.content}<p class="text-xs text-destructive">{$errors.content[0]}</p>{/if}
 					</label>
 				</div>

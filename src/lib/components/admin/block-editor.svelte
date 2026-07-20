@@ -6,12 +6,14 @@
 	interface Props {
 		value?: string;
 		uploadEndpoint: string;
+		readonly?: boolean;
 	}
 
-	let { value = $bindable(''), uploadEndpoint }: Props = $props();
+	let { value = $bindable(''), uploadEndpoint, readonly = false }: Props = $props();
 
 	let editorContainer: HTMLDivElement;
 	let editor: EditorJS | null = null;
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let status = $state<'loading' | 'ready' | 'error'>('loading');
 	let errorMessage = $state('');
 
@@ -21,6 +23,17 @@
 		const data = JSON.parse(serialized) as OutputData;
 		if (!Array.isArray(data.blocks)) throw new Error('Invalid editor data');
 		return data;
+	}
+
+	async function saveEditorValue() {
+		if (!editor) return;
+		value = JSON.stringify(await editor.save());
+	}
+
+	export async function flush() {
+		if (debounceTimer) clearTimeout(debounceTimer);
+		debounceTimer = null;
+		await saveEditorValue();
 	}
 
 	async function initializeEditor() {
@@ -85,9 +98,8 @@
 				},
 				onChange: () => {
 					if (debounceTimer) clearTimeout(debounceTimer);
-					debounceTimer = setTimeout(async () => {
-						if (!editor) return;
-						value = JSON.stringify(await editor.save());
+					debounceTimer = setTimeout(() => {
+						void saveEditorValue();
 					}, 300);
 				}
 			});
@@ -108,28 +120,36 @@
 	}
 
 	onMount(() => {
-		void initializeEditor();
+		if (!readonly) void initializeEditor();
 		return () => {
 			if (debounceTimer) clearTimeout(debounceTimer);
+			debounceTimer = null;
 			editor?.destroy();
+			editor = null;
 		};
 	});
 </script>
 
-<div class="editor-shell" role="group" aria-labelledby="body-label" aria-busy={status === 'loading'}>
-	{#if status === 'loading'}
-		<div class="editor-status text-muted-foreground">Loading editor...</div>
-	{:else if status === 'error'}
-		<div class="editor-status" role="alert">
-			<p>{errorMessage}</p>
-			<button type="button" onclick={retry}>Retry editor</button>
-		</div>
-	{/if}
-	<div bind:this={editorContainer} class:editor-hidden={status !== 'ready'} class="editor-container"></div>
-</div>
+{#if readonly}
+	<div class="editor-shell editor-legacy" role="status">
+		<p>Legacy body preserved. Edit body after converting it to EditorJS.</p>
+	</div>
+{:else}
+	<div class="editor-shell" role="group" aria-labelledby="body-label" aria-busy={status === 'loading'}>
+		{#if status === 'loading'}
+			<div class="editor-status text-muted-foreground">Loading editor...</div>
+		{:else if status === 'error'}
+			<div class="editor-status" role="alert">
+				<p>{errorMessage}</p>
+				<button type="button" onclick={retry}>Retry editor</button>
+			</div>
+		{/if}
+		<div bind:this={editorContainer} class:editor-hidden={status !== 'ready'} class="editor-container"></div>
+	</div>
 
-{#if errorMessage && status === 'ready'}
-	<p class="mt-2 text-xs text-destructive" role="alert">{errorMessage}</p>
+	{#if errorMessage && status === 'ready'}
+		<p class="mt-2 text-xs text-destructive" role="alert">{errorMessage}</p>
+	{/if}
 {/if}
 
 <style>

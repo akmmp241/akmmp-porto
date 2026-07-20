@@ -7,6 +7,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { blogPostFormSchema } from '$lib/schemas/admin';
 import { computeEditorJsReadingTime } from '$lib/server/editorjs-renderer';
+import { validateEditorJsContent } from '$lib/server/editorjs-validator';
 import { parseTagCsv, syncPostTags } from '$lib/server/tags';
 import { refreshSearchIndex } from '$lib/server/search';
 
@@ -21,6 +22,16 @@ export const actions: Actions = {
 
 		const form = await superValidate(request, zod(blogPostFormSchema));
 		if (!form.valid) return fail(400, { form });
+
+		if (form.data.contentFormat !== 'editorjs') {
+			form.errors.contentFormat = ['EditorJS format is required'];
+			return fail(400, { form });
+		}
+		const validation = validateEditorJsContent(form.data.content);
+		if (!validation.ok) {
+			form.errors.content = [validation.errors[0].message];
+			return fail(400, { form });
+		}
 
 		const [conflict] = await db
 			.select({ c: count() })
@@ -59,9 +70,7 @@ export const actions: Actions = {
 		await syncPostTags(row.id, parseTagCsv(form.data.tags));
 		await refreshSearchIndex();
 
-		// Make sure orphan-image cleanup mirrors project flow on failure paths
-		void deleteProjectImage;
-
+				
 		throw redirect(303, `/admin/blog/${row.id}`);
 	}
 };

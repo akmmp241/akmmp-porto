@@ -7,4 +7,4 @@
 
 <svelte:head><title>Edit post — Admin</title></svelte:head>
 
-<BlogPostForm form={data.form} mode={data.mode} postId={data.post.id} />
+<BlogPostForm form={data.form} mode={data.mode} postId={data.post.id} bodyEditable={data.bodyEditable} />
