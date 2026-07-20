@@ -17,8 +17,28 @@ assert.match(
 );
 assert.match(
 	publicSource,
-	/isEditorJsContent\(contentStr\)/,
-	'public blog route must detect Editor.js JSON content even when existing rows have stale markdown contentFormat'
+	/const rawContent: unknown = post\.content/,
+	'public blog route must inspect raw JSONB content before locale extraction'
+);
+assert.match(
+	publicSource,
+	/if \(isEditorJsContent\(rawContent\)\)/,
+	'public blog route must render raw Editor.js JSONB content'
+);
+assert.match(
+	publicSource,
+	/if \(isEditorJsContent\(contentStr\)\)/,
+	'public blog route must render locale-wrapped Editor.js content'
+);
+assert.doesNotMatch(
+	publicSource,
+	/contentFormat === ['"]editorjs['"] \|\|/,
+	'public blog route must not trust stale contentFormat over body shape'
+);
+assert.match(
+	publicSource,
+	/renderMarkdown\(contentStr\)/,
+	'public blog route must render non-Editor.js body as markdown'
 );
 
 const valuesStart = source.indexOf('.values({');
